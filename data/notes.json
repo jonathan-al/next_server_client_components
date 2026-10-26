@@ -8,15 +8,5 @@
     "id": "seed-2",
     "text": "A Server Action can write to it.",
     "createdAt": "2026-10-23T12:01:00.000Z"
-  },
-  {
-    "id": "cb393c61-ed9b-422a-9189-c101c830e880",
-    "text": "test",
-    "createdAt": "2026-10-24T23:41:34.008Z"
-  },
-  {
-    "id": "0ee1b9ab-b3d5-4a45-ae6c-fcb96a0b167b",
-    "text": "abc",
-    "createdAt": "2026-10-25T00:12:44.582Z"
   }
 ]
