@@ -94,6 +94,10 @@ export default function Home() {
           <code>{"dynamic = 'force-dynamic'"}</code>: the blunt switch for a whole
           route.
         </Case>
+        <Case href="/server/revalidate-0" symbol="ƒ" pages="getServerSideProps">
+          <code>revalidate = 0</code>: a cache lifetime of zero, so every request
+          renders again.
+        </Case>
         <Case href="/server/params/1" symbol="ƒ" pages="getServerSideProps">
           Dynamic route <code>[id]</code> without <code>generateStaticParams</code>.
         </Case>
