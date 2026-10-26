@@ -1,69 +1,76 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.js</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="container">
+      <h1>Server Components, Client Components and Server Actions</h1>
+      <p className="lead">
+        Five pages, one idea each. Every component logs to the place where it
+        runs: the terminal for the server, the browser console for the client.
+        Keep <strong>both</strong> visible while you click around.
+      </p>
+
+      <p>
+        Each demo wraps its components in a labelled box:{" "}
+        <span className="tag server">Server Component</span> or{" "}
+        <span className="tag client">Client Component</span>. Boxes can nest.
+      </p>
+
+      <h2>
+        <Link href="/server">/server</Link> — Server Component
+      </h2>
+      <p>
+        The default. The component is an <code>async</code> function that
+        fetches its own data, so there is no <code>getServerSideProps</code>,
+        no <code>useEffect</code> and no loading state. It can use Node.js
+        modules, and none of its code is sent to the browser.
+      </p>
+
+      <h2>
+        <Link href="/static">/static</Link> — Static page
+      </h2>
+      <p>
+        The same Server Component without <code>searchParams</code>. It reads
+        no request data, so Next renders it once at build time, like{" "}
+        <code>getStaticProps</code>. Compare it with <code>/server</code> after{" "}
+        <code>npm run build</code>.
+      </p>
+
+      <h2>
+        <Link href="/client">/client</Link> — Client Component
+      </h2>
+      <p>
+        Add <code>&quot;use client&quot;</code> to a file and it can use state,
+        effects, event handlers and browser APIs. The page around it stays a
+        Server Component.
+      </p>
+
+      <h2>
+        <Link href="/composition">/composition</Link> — Server + Client together
+      </h2>
+      <p>
+        How the two mix: a Server Component passes data to a Client Component
+        through props, and a Client Component can show a Server Component that
+        it receives as <code>children</code>.
+      </p>
+
+      <h2>
+        <Link href="/actions">/actions</Link> — Server Actions
+      </h2>
+      <p>
+        Functions marked <code>&quot;use server&quot;</code> that run on the
+        server but are called straight from a form. Add and delete notes
+        without writing an API route.
+      </p>
+
+      <div className="note" style={{ marginTop: "2.5rem" }}>
+        <p>
+          <strong>Important:</strong> in <code>npm run dev</code> every page is
+          rendered on every request, which hides the difference between static
+          and dynamic pages. To see the real behaviour, run{" "}
+          <code>npm run build &amp;&amp; npm start</code>.
+        </p>
+      </div>
+    </main>
   );
 }
