@@ -295,3 +295,52 @@ button.secondary:hover:not(:disabled) {
   font-size: 0.9rem;
   margin: 0;
 }
+
+/* --- demo page frame (components/DemoPage.js) --- */
+
+.meta {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.meta strong {
+  color: var(--foreground);
+}
+
+/* --- home page index --- */
+
+.index {
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.index li {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.925rem;
+}
+
+.index .path {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 600;
+}
+
+.index .what {
+  color: var(--muted);
+  display: block;
+}
+
+.index .badges {
+  float: right;
+  margin-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}

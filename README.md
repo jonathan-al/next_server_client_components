@@ -12,20 +12,29 @@ the Pages Router data fetching demo (`next_get_props`).
 
 ```bash
 npm run dev      # development: every page is rendered on every request
+npm run prod     # next build && next start: the real behaviour
 ```
 
-To see how static and dynamic pages really differ, build first:
+Use `npm run prod` to study the cases. In `npm run dev` every page is rendered on
+every request, so static and dynamic pages look the same. After the build, read
+the route table:
 
-```bash
-npm run build    # watch which routes are marked ○ (static) and ƒ (per request)
-npm start
-```
+| Symbol | Meaning |
+|---|---|
+| `○` | Static: rendered once, at build time |
+| `●` | Static with parameters: some ids rendered at build time (`generateStaticParams`) |
+| `ƒ` | Dynamic: rendered on every request |
+| `10s` in the *Revalidate* column | Static, but rebuilt in the background at most every 10 seconds (ISR) |
+
+The `/db` pages use `node:sqlite`, which ships with Node.js 22.13 or newer. The
+database file `data/app.db` is created on first use and is not committed. Node
+prints an "experimental" warning for it; that is expected.
 
 ## Coming from the Pages Router
 
 | Pages Router | App Router |
 |---|---|
-| `getStaticProps` | An `async` Server Component. Static by default: it runs once, at build time |
+| `getStaticProps` | An `async` Server Component. Static by default: it runs once, at build time (`/static`) |
 | `getServerSideProps` | An `async` Server Component that reads request data (`searchParams`, `cookies()`, `headers()`), so it runs on every request |
 | `pages/api/*` plus a client `fetch` to save data | A Server Action |
 | Every page component is hydrated in the browser | Components stay on the server unless the file starts with `"use client"` |
@@ -49,19 +58,13 @@ server, but you pass it to a `<form action={...}>` and Next sends the POST
 request for you. Every Server Action is a public endpoint, so a real app must
 check authentication inside it.
 
-## The pages
+## The cases
 
-Every demo component sits in a labelled box: green for a Server Component,
-orange for a Client Component. Boxes nest, so you can see the boundaries.
+The home page is a dictionary of all of them. Every demo component sits in a
+labelled box: green for a Server Component, orange for a Client Component.
 
-- [`app/server/page.js`](app/server/page.js) — **Server Component**. The page is
-  `async` and fetches the users itself. It reads `?limit=3` from the URL, so it
-  renders on every request. It also uses the Node.js `os` module, which only
-  works on the server.
-- [`app/static/page.js`](app/static/page.js) — **Static page**. The same Server
-  Component without `searchParams`. It reads no request data, so Next renders it
-  once at `npm run build`, like `getStaticProps`, and serves that HTML to
-  everyone.
+### Fundamentals
+
 - [`app/client/page.js`](app/client/page.js) — **Client Components**. The page
   stays a Server Component and renders two small interactive pieces:
   [`Counter`](components/Counter.js) (`useState`, `onClick`) and
@@ -80,8 +83,54 @@ orange for a Client Component. Boxes nest, so you can see the boundaries.
   request; without it, Next would prerender the page at build time and serve
   that old list.
 
-[`lib/notes.js`](lib/notes.js) imports `server-only`, so the build fails if a
-Client Component ever imports it.
+### `/server` — what makes a page dynamic (`ƒ`)
+
+An `async` Server Component becomes dynamic when it needs something only a real
+request knows.
+
+| Route | What triggers it | Pages Router |
+|---|---|---|
+| `/server` | `await searchParams` (`?limit=3`); also uses the Node.js `os` module | `getServerSideProps` |
+| `/server/cookies` | `cookies()`, plus a Server Action that sets one | `req.cookies` |
+| `/server/headers` | `headers()` | `req.headers` |
+| `/server/connection` | `await connection()`: nothing to read, but the output must differ each time | — |
+| `/server/no-store` | `fetch(url, { cache: 'no-store' })` | `getServerSideProps` |
+| `/server/force-dynamic` | `export const dynamic = 'force-dynamic'` | `getServerSideProps` |
+| `/server/params/[id]` | Dynamic route without `generateStaticParams` | `getServerSideProps` + `params` |
+
+### `/static` — ways Next builds a page once (`○` and `●`)
+
+| Route | Mechanism | Pages Router |
+|---|---|---|
+| `/static` | The default: no request data | `getStaticProps` |
+| `/static/force-static` | `dynamic = 'force-static'`: `cookies()` and `headers()` return empty values | `getStaticProps` |
+| `/static/error` | `dynamic = 'error'`: the build fails if the page would become dynamic | `getStaticProps` |
+| `/static/revalidate` | `export const revalidate = 10` (ISR for the route) | `revalidate: 10` |
+| `/static/fetch-revalidate` | `fetch(url, { next: { revalidate: 10 } })` (ISR on one fetch) | `revalidate: 10` |
+| `/static/on-demand` | `revalidatePath()` from a Server Action | `res.revalidate()` |
+| `/static/posts/[id]` | `generateStaticParams`: ids 1–3 at build time, others on first visit | `getStaticPaths` + `fallback: 'blocking'` |
+| `/static/posts-strict/[id]` | The same plus `dynamicParams = false`: other ids are a 404 | `getStaticPaths` + `fallback: false` |
+
+### `/db` — SQLite: the same data, four behaviours
+
+[`lib/db.js`](lib/db.js) opens `data/app.db` with `node:sqlite`. All four pages show
+the same books and the same **+1 like** button
+([`BookList`](components/BookList.js)). The Server Actions are in
+[`lib/db-actions.js`](lib/db-actions.js). What differs is how the page is built:
+
+| Route | How | Does a like show up? |
+|---|---|---|
+| `/db/static-trap` | Plain query, nothing tells Next it is dynamic | **No.** `○`: frozen at the build-time value |
+| `/db/connection` | `await connection()` before the query | Yes, on every reload (`ƒ`) |
+| `/db/revalidate` | `revalidate = 10` | After up to 10 s, on the reload that follows |
+| `/db/cached` | `unstable_cache` with a tag, and the action calls `updateTag('books')` | Yes, the action returns the fresh page |
+
+Next cannot see inside a database call, and `node:sqlite` is synchronous, so a
+query finishes during the build. That is why `/db/static-trap` freezes, and why
+`/actions` needs `connection()`.
+
+[`lib/notes.js`](lib/notes.js) and [`lib/db.js`](lib/db.js) import `server-only`, so
+the build fails if a Client Component ever imports them.
 
 ## Where do the logs appear?
 
@@ -141,3 +190,27 @@ Every component logs when it renders, with a `[Server Component]`,
     you still get the old page, but the terminal logs a new render. Reload once
     more to see the new timestamp. This is `getStaticProps` with
     `revalidate: 10` (Incremental Static Regeneration). Remove the line.
+13. Run `npm run prod` and compare `/server/connection` with the same page after
+    removing `await connection()`: the route becomes `○` and the random number
+    never changes. That is the whole job of `connection()`.
+14. Open `/server/cookies`, press "Set dark", and look at DevTools → Application →
+    Cookies. Then open the page in a private window: it has no cookie. The same
+    URL, two different pages.
+15. Open `/static/force-static` with a `theme` cookie set (from step 14): the page
+    shows `undefined`. It never saw your request. Now change `force-static` to
+    `force-dynamic`, build again, and the cookie appears.
+16. In `app/static/error/page.js`, add `await cookies()` (from `next/headers`) and
+    run `npm run build`. The build stops with an error instead of quietly making
+    the page dynamic. Undo it.
+17. Open `/static/posts/1`, then `/static/posts/4` and watch the terminal: post 4
+    renders on its first visit only. Then try `/static/posts-strict/4`: a 404.
+18. After `npm run prod`, press **+1 like** on `/db/static-trap` and reload: the
+    number does not move. Open `/db/connection`: the like is there. Add
+    `await connection()` to the trap page and the bug is gone.
+19. On `/db/revalidate`, press a like and reload until the number changes. The
+    first reload after 10 seconds serves the old page and starts a rebuild, so the
+    number shows up one reload later.
+20. On `/db/cached` and `/static/on-demand`, the button updates the page at once
+    because the action's response carries the fresh render. A plain reload right
+    after can still return the previous copy for a while, until the cache catches
+    up (10 to 40 seconds in tests).

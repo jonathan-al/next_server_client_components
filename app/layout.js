@@ -20,11 +20,10 @@ export default function RootLayout({ children }) {
         <nav className="nav">
           <div className="nav-inner">
             <Link href="/">Home</Link>
-            <Link href="/server">/server — Server Component</Link>
-            <Link href="/static">/static — Static page</Link>
-            <Link href="/client">/client — Client Component</Link>
-            <Link href="/composition">/composition — Together</Link>
-            <Link href="/actions">/actions — Server Actions</Link>
+            <Link href="/#server">/server — dynamic</Link>
+            <Link href="/#static">/static — static</Link>
+            <Link href="/#db">/db — SQLite</Link>
+            <Link href="/#fundamentals">Fundamentals</Link>
           </div>
         </nav>
         {children}

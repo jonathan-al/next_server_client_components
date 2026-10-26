@@ -35,7 +35,8 @@ export default async function ServerPage({ searchParams }) {
           <Link href="/server?limit=3">?limit=3</Link> ·{" "}
           <Link href="/server?limit=10">?limit=10</Link> and watch the terminal.
           Without <code>searchParams</code> it would be static: see{" "}
-          <Link href="/static">/static</Link>.
+          <Link href="/static">/static</Link>. More ways to be dynamic are on the{" "}
+          <Link href="/#server">home page</Link>.
         </p>
       </div>
 
