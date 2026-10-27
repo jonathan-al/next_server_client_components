@@ -111,9 +111,9 @@ request knows.
 | `/static/posts/[id]` | `generateStaticParams`: ids 1–3 at build time, others on first visit | `getStaticPaths` + `fallback: 'blocking'` |
 | `/static/posts-strict/[id]` | The same plus `dynamicParams = false`: other ids are a 404 | `getStaticPaths` + `fallback: false` |
 
-### `/db` — SQLite: the same data, four behaviours
+### `/db` — SQLite: the same data, five behaviours
 
-[`lib/db.js`](lib/db.js) opens `data/app.db` with `node:sqlite`. All four pages show
+[`lib/db.js`](lib/db.js) opens `data/app.db` with `node:sqlite`. All five pages show
 the same books and the same **+1 like** button
 ([`BookList`](components/BookList.js)). The Server Actions are in
 [`lib/db-actions.js`](lib/db-actions.js). What differs is how the page is built:
@@ -122,6 +122,7 @@ the same books and the same **+1 like** button
 |---|---|---|
 | `/db/static-trap` | Plain query, nothing tells Next it is dynamic | **No.** `○`: frozen at the build-time value |
 | `/db/connection` | `await connection()` before the query | Yes, on every reload (`ƒ`) |
+| `/db/revalidate-path` | `await connection()`, and the action calls `revalidatePath('/db/revalidate-path')` | Yes, on every reload, and the open screen refreshes at once |
 | `/db/revalidate` | `revalidate = 10` | After up to 10 s, on the reload that follows |
 | `/db/cached` | `unstable_cache` with a tag, and the action calls `updateTag('books')` | Yes, the action returns the fresh page |
 
@@ -214,3 +215,6 @@ Every component logs when it renders, with a `[Server Component]`,
     because the action's response carries the fresh render. A plain reload right
     after can still return the previous copy for a while, until the cache catches
     up (10 to 40 seconds in tests).
+21. Press **+1 like** on `/db/connection`: the number on screen does not move
+    (the action invalidates nothing), but a reload shows it. Do the same on
+    `/db/revalidate-path`: the number changes at once, with no cache involved.

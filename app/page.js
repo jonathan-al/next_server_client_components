@@ -142,9 +142,9 @@ export default function Home() {
         </Case>
       </ul>
 
-      <h2 id="db">/db — SQLite: the same data, four behaviours</h2>
+      <h2 id="db">/db — SQLite: the same data, five behaviours</h2>
       <p>
-        A real database (<code>node:sqlite</code>, built into Node.js). All four
+        A real database (<code>node:sqlite</code>, built into Node.js). All five
         pages show the same books with the same <em>+1 like</em> button. Press it
         on each and see who notices the change.
       </p>
@@ -162,6 +162,10 @@ export default function Home() {
         <Case href="/db/cached" symbol="○" pages="res.revalidate()">
           <code>unstable_cache</code> with a tag, expired by the Server Action that
           writes.
+        </Case>
+        <Case href="/db/revalidate-path" symbol="ƒ" pages="getServerSideProps">
+          Dynamic, plus <code>revalidatePath</code> in the action so the open
+          screen refreshes at once. No cache involved.
         </Case>
       </ul>
     </main>
